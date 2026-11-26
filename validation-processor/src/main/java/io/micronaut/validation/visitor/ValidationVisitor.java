@@ -114,6 +114,10 @@ public class ValidationVisitor implements TypeElementVisitor<Object, Object> {
         boolean parametersRequireValidation = parametersRequireValidation(element, requireOnConstraint);
         boolean returnTypeRequiresValidation = visitElementValidationAndMarkForValidationIfNeeded(element.getReturnType(), requireOnConstraint);
         boolean methodAnnotatedForValidation = returnTypeRequiresValidation(element, true);
+        if (element.getMethodAnnotationMetadata().hasStereotype(ANN_VALID)) {
+            // Kotlin keeps a getter's @Valid off the return type, so the method is marked for the validator to cascade into containers
+            element.annotate(ANN_CASCADE);
+        }
         if (parametersRequireValidation || returnTypeRequiresValidation || methodAnnotatedForValidation) {
             if (isPrivate) {
                 throw new ProcessingException(element, "Method annotated for validation but is declared private. Change the method to be non-private in order for AOP advice to be applied.");
